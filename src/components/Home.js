@@ -1,14 +1,21 @@
-import axios from 'axios';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Form, Modal, Spinner, Dropdown } from 'react-bootstrap';
-import { apiKey } from '../api';
+import axios from "axios";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
+import { Alert, Button, Form, Modal, Spinner, Dropdown } from "react-bootstrap";
+import { apiKey } from "../api";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const usePagination = (items, initialPerPage = 10) => {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: initialPerPage,
     totalPages: 0,
-    totalResults: 0
+    totalResults: 0,
   });
 
   const paginatedItems = useMemo(() => {
@@ -18,22 +25,22 @@ const usePagination = (items, initialPerPage = 10) => {
     return {
       currentItems: items.slice(startIndex, endIndex),
       totalPages: Math.ceil(items.length / pagination.perPage),
-      totalResults: items.length
+      totalResults: items.length,
     };
   }, [items, pagination.currentPage, pagination.perPage]);
 
   const changePage = useCallback((newPage) => {
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
-      currentPage: newPage
+      currentPage: newPage,
     }));
   }, []);
 
   const changePerPage = useCallback((newPerPage) => {
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       perPage: newPerPage,
-      currentPage: 1
+      currentPage: 1,
     }));
   }, []);
 
@@ -43,7 +50,7 @@ const usePagination = (items, initialPerPage = 10) => {
     totalPages: paginatedItems.totalPages,
     totalResults: paginatedItems.totalResults,
     changePage,
-    changePerPage
+    changePerPage,
   };
 };
 
@@ -62,29 +69,31 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (currentPage <= maxPagesToShow - 2) {
       return [
         ...Array.from({ length: maxPagesToShow - 1 }, (_, i) => i + 1),
-        '...',
-        totalPages
+        "...",
+        totalPages,
       ];
     }
 
     if (currentPage > totalPages - (maxPagesToShow - 2)) {
       return [
         1,
-        '...',
-        ...Array.from({ length: maxPagesToShow - 1 }, (_, i) =>
-          totalPages - (maxPagesToShow - 2) + i
-        )
+        "...",
+        ...Array.from(
+          { length: maxPagesToShow - 1 },
+          (_, i) => totalPages - (maxPagesToShow - 2) + i
+        ),
       ];
     }
 
     return [
       1,
-      '...',
-      ...Array.from({ length: maxPagesToShow - 2 }, (_, i) =>
-        currentPage - leftSide + i
+      "...",
+      ...Array.from(
+        { length: maxPagesToShow - 2 },
+        (_, i) => currentPage - leftSide + i
       ),
-      '...',
-      totalPages
+      "...",
+      totalPages,
     ];
   };
 
@@ -93,7 +102,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   return (
     <nav>
       <ul className="pagination mb-0 justify-content-center">
-        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
           <Button
             variant="outline-secondary"
             size="sm"
@@ -105,7 +114,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         </li>
 
         {pageNumbers.map((page, index) => {
-          if (page === '...') {
+          if (page === "...") {
             return (
               <li key={`ellipsis-${index}`} className="page-item">
                 <span className="page-link text-muted">...</span>
@@ -116,10 +125,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           return (
             <li
               key={page}
-              className={`page-item ${currentPage === page ? 'active' : ''}`}
+              className={`page-item ${currentPage === page ? "active" : ""}`}
             >
               <Button
-                variant={currentPage === page ? 'primary' : 'outline-secondary'}
+                variant={currentPage === page ? "primary" : "outline-secondary"}
                 size="sm"
                 onClick={() => onPageChange(page)}
                 className="mx-1"
@@ -130,7 +139,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           );
         })}
 
-        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+        <li
+          className={`page-item ${
+            currentPage === totalPages ? "disabled" : ""
+          }`}
+        >
           <Button
             variant="outline-secondary"
             size="sm"
@@ -147,13 +160,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 const sortItems = (items, sortOrder) => {
   switch (sortOrder) {
-    case 'price-high-low':
-      return [...items].sort((a, b) => parseFloat(b.item.price.naturalAmount) - parseFloat(a.item.price.naturalAmount));
-    case 'price-low-high':
-      return [...items].sort((a, b) => parseFloat(a.item.price.naturalAmount) - parseFloat(b.item.price.naturalAmount));
-    case 'name-a-z':
+    case "price-high-low":
+      return [...items].sort(
+        (a, b) =>
+          parseFloat(b.item.price.naturalAmount) -
+          parseFloat(a.item.price.naturalAmount)
+      );
+    case "price-low-high":
+      return [...items].sort(
+        (a, b) =>
+          parseFloat(a.item.price.naturalAmount) -
+          parseFloat(b.item.price.naturalAmount)
+      );
+    case "name-a-z":
       return [...items].sort((a, b) => a.item.name.localeCompare(b.item.name));
-    case 'name-z-a':
+    case "name-z-a":
       return [...items].sort((a, b) => b.item.name.localeCompare(a.item.name));
     default:
       return items;
@@ -167,69 +188,108 @@ const MarketplaceHome = ({ referenceId }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [buyLoading, setBuyLoading] = useState(false);
   const [buyError, setBuyError] = useState(null);
-  const [sortOrder, setSortOrder] = useState('default');
+  const [sortOrder, setSortOrder] = useState("default");
   const [lastFetchTime, setLastFetchTime] = useState(Date.now());
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Thêm state cho slideshow
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = [
+    "/images/footer-banner.png",
+    "/images/5.png",
+    "/images/4.jpg",
+    "/images/7.png",
+    "/images/1.png",
+    "/images/2.png",
+    "/images/3.png",
+    "/images/4.jpg",
+    "/images/6.jpg",
+  ];
+
+  // Function to change slide (next slide)
+  const changeSlide = (direction) => {
+    setCurrentIndex((prevIndex) => {
+      if (direction === "next") {
+        return (prevIndex + 1) % images.length; // move forward
+      } else {
+        return (prevIndex - 1 + images.length) % images.length; // move backward
+      }
+    });
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => changeSlide("next"), 3000); // Change image every 3 seconds
+    return () => clearInterval(intervalId); // Clean up interval on unmount
+  }, []);
 
   const filteredItems = useMemo(() => {
-    const filtered = allItems.filter(itemData =>
-      itemData.type === 'UniqueAsset' &&
-      itemData.item.price && itemData.item.price.naturalAmount !== null &&
-      itemData.item.owner.referenceId !== referenceId &&
-      itemData.item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = allItems.filter(
+      (itemData) =>
+        itemData.type === "UniqueAsset" &&
+        itemData.item.price &&
+        itemData.item.price.naturalAmount !== null &&
+        itemData.item.owner.referenceId !== referenceId &&
+        itemData.item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     return sortItems(filtered, sortOrder);
   }, [allItems, referenceId, sortOrder, searchTerm]);
 
-  const fetchAllItems = useCallback(async (signal) => {
-    setLoading(true);
-    setError(null);
+  const fetchAllItems = useCallback(
+    async (signal) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const fetchPage = async (page) => {
-        const response = await axios.get('https://api.gameshift.dev/nx/items', {
-          signal,
-          params: {
-            perPage: 100,
-            page: page,
-            collectionId: 'fd849a9c-13dc-44ff-a962-66d1ba30fc1a',
-          },
-          headers: {
-            accept: 'application/json',
-            'x-api-key': apiKey,
-          },
-        });
-        return response.data;
-      };
+      try {
+        const fetchPage = async (page) => {
+          const response = await axios.get(
+            "https://api.gameshift.dev/nx/items",
+            {
+              signal,
+              params: {
+                perPage: 100,
+                page: page,
+                collectionId: "fd849a9c-13dc-44ff-a962-66d1ba30fc1a",
+              },
+              headers: {
+                accept: "application/json",
+                "x-api-key": apiKey,
+              },
+            }
+          );
+          return response.data;
+        };
 
-      let allFetchedItems = [];
-      let page = 1;
-      let totalPages = 1;
+        let allFetchedItems = [];
+        let page = 1;
+        let totalPages = 1;
 
-      while (page <= totalPages) {
-        const { data, meta } = await fetchPage(page);
-        allFetchedItems.push(...data);
-        totalPages = meta.totalPages;
-        page++;
+        while (page <= totalPages) {
+          const { data, meta } = await fetchPage(page);
+          allFetchedItems.push(...data);
+          totalPages = meta.totalPages;
+          page++;
+        }
+
+        const hasChanged =
+          JSON.stringify(allFetchedItems) !== JSON.stringify(allItems);
+
+        if (hasChanged) {
+          setAllItems(allFetchedItems);
+          setLastFetchTime(Date.now());
+        }
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log("Request canceled", err.message);
+        } else {
+          setError("Không thể tải danh sách sản phẩm: " + err.message);
+          console.error("Fetch error:", err);
+        }
+      } finally {
+        setLoading(false);
       }
-
-      const hasChanged = JSON.stringify(allFetchedItems) !== JSON.stringify(allItems);
-
-      if (hasChanged) {
-        setAllItems(allFetchedItems);
-        setLastFetchTime(Date.now());
-      }
-    } catch (err) {
-      if (axios.isCancel(err)) {
-        console.log('Request canceled', err.message);
-      } else {
-        setError('Không thể tải danh sách sản phẩm: ' + err.message);
-        console.error('Fetch error:', err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [allItems]);
+    },
+    [allItems]
+  );
 
   const handleManualRefresh = () => {
     fetchAllItems();
@@ -255,7 +315,7 @@ const MarketplaceHome = ({ referenceId }) => {
         if (axios.isCancel(err)) {
           return;
         }
-        console.error('Fetch error:', err);
+        console.error("Fetch error:", err);
       }
     };
 
@@ -273,7 +333,7 @@ const MarketplaceHome = ({ referenceId }) => {
     totalResults,
     perPage,
     changePage,
-    changePerPage
+    changePerPage,
   } = usePagination(filteredItems);
 
   const handleBuyItem = async (itemData) => {
@@ -294,26 +354,27 @@ const MarketplaceHome = ({ referenceId }) => {
       const response = await axios.post(
         `https://api.gameshift.dev/nx/unique-assets/${selectedItem.id}/buy`,
         {
-          buyerId: referenceId
+          buyerId: referenceId,
         },
         {
           headers: {
-            'accept': 'application/json',
-            'content-type': 'application/json',
-            'x-api-key': apiKey
-          }
+            accept: "application/json",
+            "content-type": "application/json",
+            "x-api-key": apiKey,
+          },
         }
       );
 
       const { consentUrl } = response.data;
-      window.open(consentUrl, '_blank');
+      window.open(consentUrl, "_blank");
       fetchAllItems();
     } catch (err) {
-      console.error('Lỗi mua sản phẩm:', err);
+      console.error("Lỗi mua sản phẩm:", err);
 
-      const errorMessage = err.response?.data?.message ||
+      const errorMessage =
+        err.response?.data?.message ||
         err.message ||
-        'Không thể thực hiện giao dịch. Vui lòng thử lại.';
+        "Không thể thực hiện giao dịch. Vui lòng thử lại.";
 
       setBuyError(errorMessage);
     } finally {
@@ -349,54 +410,64 @@ const MarketplaceHome = ({ referenceId }) => {
   }
 
   return (
-    <div className="marketplace-container position-relative" style={{
-      minHeight: '500px',
-      color: '#ffffff'
-    }}>
+    <div
+      className="marketplace-container position-relative"
+      style={{ minHeight: "500px", color: "#ffffff" }}
+    >
       <div className="container py-5">
-        <div className="mb-5">
-          <div className="p-5 text-center bg-image rounded-3" style={{
-            backgroundImage: "url('https://static.vecteezy.com/system/resources/previews/004/727/152/non_2x/illustration-of-a-non-fungible-token-nft-background-for-infographics-digital-technology-concept-crypto-art-futuristic-neon-wallpaper-with-typography-vector.jpg')",
-            height: '300px',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}>
-            <div className="mask" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
-              <div className="d-flex justify-content-center align-items-center h-100">
-                <div className="text-white">
-                  <h1 className="mb-3">Chào mừng</h1>
-                  <h4 className="mb-3">Đến với thế giới NFT</h4>
-                </div>
-              </div>
-            </div>
-          </div>
+
+        {/* Banner Section */}
+        <div className="slider-container">
+          <button
+            className="slider-button prev"
+            onClick={() => changeSlide("prev")}
+          >
+            &#10094; {/* Left arrow symbol */}
+          </button>
+
+          {images.map((image, index) => (
+            <img
+              key={index}
+              src={image}
+              alt={`slide ${index}`}
+              className={`slider-image ${
+                currentIndex === index ? "visible" : ""
+              }`}
+            />
+          ))}
+
+          <button
+            className="slider-button next"
+            onClick={() => changeSlide("next")}
+          >
+            &#10095; {/* Right arrow symbol */}
+          </button>
         </div>
 
-
-        <div className="text-center mb-5">
-          <h1 className="display-4 fw-bold text-white mb-3" style={{
-            background: 'linear-gradient(90deg, #00d2ff 0%, #7e51ff 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            Marketplace
-          </h1>
-          <p className="lead text-white-50">Khám phá và sở hữu những tài sản độc đáo</p>
+        <div className="run">
+          <marquee>
+            <span style={{ color: "red" }}>[SHOPCNTT12]</span>
+            CHÀO MỪNG BẠN ĐẾN VỚI SHOPCNTT12 - SHOP BÁN VẬT PHẨM GAME CSGO UY
+            TÍN , TOP 1 VIỆT NAM
+          </marquee>
         </div>
 
         <div className="row mb-4 g-3 align-items-center">
           <div className="col-12 col-md-4">
-            <div className="d-flex align-items-center text-white">
-              <span className="me-3">Hiển thị: {currentItems.length} / {totalResults} sản phẩm</span>
+            <div className="d-flex align-items-center justify-content-between text-white">
+              <span className="me-3">
+                Hiển thị: {currentItems.length}/{totalResults}
+              </span>
               <Form.Select
                 size="sm"
                 className="text-white"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(15px)',
-                  borderRadius: '15px',
-                  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                  border: '1px solid rgba(255, 255, 255, 0.18)'
+                  width: "200px", // Đặt chiều rộng cụ thể cho dropdown
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(15px)",
+                  borderRadius: "15px",
+                  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
                 }}
                 value={perPage}
                 onChange={(e) => changePerPage(Number(e.target.value))}
@@ -428,17 +499,28 @@ const MarketplaceHome = ({ referenceId }) => {
           />
         </div>
 
-        <div className="d-flex justify-content-end mb-3 text-white">
+        {/* Sort Dropdown: Menu sắp xếp sản phẩm */}
+        <div className="d-flex justify-content-end mb-3">
           <Dropdown>
             <Dropdown.Toggle variant="secondary" id="dropdown-sort">
-              Sort BySort By
+              Sắp xếp theo
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => setSortOrder('default')}>Default</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortOrder('price-high-low')}>Price: High to Low</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortOrder('price-low-high')}>Price: Low to High</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortOrder('name-a-z')}>Name: A to Z</Dropdown.Item>
-              <Dropdown.Item onClick={() => setSortOrder('name-z-a')}>Name: Z to A</Dropdown.Item>
+              <Dropdown.Item onClick={() => setSortOrder("default")}>
+                Mặc định
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSortOrder("price-high-low")}>
+                Giá: Cao đến Thấp
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSortOrder("price-low-high")}>
+                Giá: Thấp đến Cao
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSortOrder("name-a-z")}>
+                Tên: A đến Z
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => setSortOrder("name-z-a")}>
+                Tên: Z đến A
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </div>
@@ -454,32 +536,36 @@ const MarketplaceHome = ({ referenceId }) => {
               return (
                 <div key={item.id} className="col">
                   <div
-                    className="card h-100 bg-transparent border-0 card-hover-effect"
+                    className="card h-100 bg-transparent border-0 shadow-lg"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: '15px',
-                      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-                      border: '1px solid rgba(255, 255, 255, 0.18)'
+                      borderRadius: "15px", // Bo tròn góc
+                      backdropFilter: "blur(20px)", // Hiệu ứng mờ nền
                     }}
                   >
+                    {/* Product Image: Hiển thị ảnh sản phẩm */}
                     <div
                       className="card-img-top position-relative overflow-hidden"
                       style={{
-                        height: '250px',
-                        borderTopLeftRadius: '15px',
-                        borderTopRightRadius: '15px',
-                        background: `url(${item.imageUrl || '/default-image.jpg'}) center/cover no-repeat`
+                        height: "250px", // Chiều cao ảnh
+                        borderTopLeftRadius: "15px", // Bo tròn góc trên trái
+                        borderTopRightRadius: "15px", // Bo tròn góc trên phải
+                        background: `url(${
+                          item.imageUrl || "/default-image.jpg"
+                        }) center/cover no-repeat`,
                       }}
                     >
+                      {/* Price Badge: Hiển thị giá */}
                       <div
                         className="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-50"
-                        style={{ backdropFilter: 'blur(5px)' }}
+                        style={{ backdropFilter: "blur(5px)" }}
                       >
-                        {`$${parseFloat(item.price.naturalAmount).toFixed(2)} ${item.price.currencyId}`}
+                        {`$${parseFloat(item.price.naturalAmount).toFixed(2)} ${
+                          item.price.currencyId
+                        }`}
                       </div>
                     </div>
 
+                    {/* Product Info: Hiển thị thông tin sản phẩm */}
                     <div className="card-body text-white">
                       <h5 className="card-title fw-bold mb-2">{item.name}</h5>
                       <p className="card-text text-white-50 mb-3">
@@ -491,8 +577,9 @@ const MarketplaceHome = ({ referenceId }) => {
                         className="w-100 mt-auto"
                         onClick={() => handleBuyItem(itemData)}
                         style={{
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          border: 'none'
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          border: "none",
                         }}
                       >
                         Xem chi tiết
@@ -509,9 +596,9 @@ const MarketplaceHome = ({ referenceId }) => {
       <div
         className="position-fixed bottom-0 end-0 m-4 text-white"
         style={{
-          backdropFilter: 'blur(5px)',
-          borderRadius: '10px',
-          padding: '10px 20px'
+          backdropFilter: "blur(5px)",
+          borderRadius: "10px",
+          padding: "10px 20px",
         }}
       >
         <small>
@@ -550,10 +637,10 @@ const MarketplaceHome = ({ referenceId }) => {
                       alt={selectedItem.name}
                       className="img-fluid rounded-3 shadow-sm"
                       style={{
-                        height: '320px',
-                        width: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center'
+                        height: "320px",
+                        width: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center",
                       }}
                     />
                   </div>
@@ -569,35 +656,45 @@ const MarketplaceHome = ({ referenceId }) => {
                         </div>
                         <div className="mb-2">
                           <span className="fw-bold me-2">Mô tả:</span>
-                          <span>{selectedItem.description || 'Không có mô tả'}</span>
+                          <span>
+                            {selectedItem.description || "Không có mô tả"}
+                          </span>
                         </div>
                         <div>
                           <span className="fw-bold me-2">Giá:</span>
                           <span className="text-primary fw-bold">
-                            ${parseFloat(selectedItem.price.naturalAmount).toFixed(2)} ${selectedItem.price.currencyId}
+                            $
+                            {parseFloat(
+                              selectedItem.price.naturalAmount
+                            ).toFixed(2)}{" "}
+                            ${selectedItem.price.currencyId}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {selectedItem.attributes && selectedItem.attributes.length > 0 && (
-                      <div className="attributes-section mb-4">
-                        <h5 className="mb-3 text-muted">Độ hiếm</h5>
-                        <div className="bg-light rounded-3 overflow-hidden">
-                          {selectedItem.attributes.map((attr, index) => (
-                            <div
-                              key={index}
-                              className={`d-flex justify-content-between align-items-center p-2 ${index < selectedItem.attributes.length - 1 ? 'border-bottom' : ''
+                    {selectedItem.attributes &&
+                      selectedItem.attributes.length > 0 && (
+                        <div className="attributes-section mb-4">
+                          <h5 className="mb-3 text-muted">Độ hiếm</h5>
+                          <div className="bg-light rounded-3 overflow-hidden">
+                            {selectedItem.attributes.map((attr, index) => (
+                              <div
+                                key={index}
+                                className={`d-flex justify-content-between align-items-center p-2 ${
+                                  index < selectedItem.attributes.length - 1
+                                    ? "border-bottom"
+                                    : ""
                                 }`}
-                            >
-                              <span className="badge bg-primary rounded-pill">
-                                {attr.value}
-                              </span>
-                            </div>
-                          ))}
+                              >
+                                <span className="badge bg-primary rounded-pill">
+                                  {attr.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {buyError && (
                       <Alert variant="danger" className="mt-auto">
@@ -638,7 +735,7 @@ const MarketplaceHome = ({ referenceId }) => {
                     Đang xử lý...
                   </>
                 ) : (
-                  'Xác nhận mua'
+                  "Xác nhận mua"
                 )}
               </Button>
             </div>
@@ -650,4 +747,3 @@ const MarketplaceHome = ({ referenceId }) => {
 };
 
 export default MarketplaceHome;
-

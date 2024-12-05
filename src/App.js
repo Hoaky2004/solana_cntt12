@@ -3,26 +3,47 @@ import {
   clusterApiUrl,
   Connection,
   LAMPORTS_PER_SOL,
-  PublicKey
-} from '@solana/web3.js';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Col, Container, Nav, Navbar, NavDropdown, Row } from 'react-bootstrap';
-import { Navigate, NavLink, Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import './App.css';
+  PublicKey,
+} from "@solana/web3.js";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  Col,
+  Container,
+  Nav,
+  Navbar,
+  NavDropdown,
+  Row,
+  Spinner,
+} from "react-bootstrap";
+import {
+  Navigate,
+  NavLink,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import "./App.css";
 import AuthForm from "./components/AuthForm";
 import Home from "./components/Home";
 import MyNfts from "./components/MyNfts";
-import User from "./components/User";
+import Footer from "./components/Footer"; // Import Footer component
+import PurchaseHistory from "./components/PurchaseHistory";
 
-const USDC_MINT_ADDRESS = new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
+const USDC_MINT_ADDRESS = new PublicKey(
+  "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+);
 
 function App() {
   const [userData, setUserData] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const connection = useMemo(() => new Connection(clusterApiUrl('devnet'), 'confirmed'), []);
+  const connection = useMemo(
+    () => new Connection(clusterApiUrl("devnet"), "confirmed"),
+    []
+  );
 
   const [walletAddress, setWalletAddress] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -145,42 +166,102 @@ function App() {
       <div className="app-container">
         {!isLoggedIn ? (
           <div className="auth-container">
-            <AuthForm
-              setIsLoggedIn={setIsLoggedIn}
-              setUserData={setUserData}
-            />
+            <AuthForm setIsLoggedIn={setIsLoggedIn} setUserData={setUserData} />
           </div>
         ) : (
-          <div>
-            <Navbar expand="lg">
-              <Container fluid>
-                <Navbar.Brand>
-                  <i className="bi bi-controller me-2"></i>
-                  Solana CNTT 12
+          <>
+            {/* Thêm ảnh vào trên Header */}
+            <div className="header-banner">
+              <img
+                src="/images/banner_header.png"
+                alt="Banner Header"
+                className="header-image"
+              />
+            </div>
+
+            <Navbar expand="lg" bg="dark" variant="dark">
+              <Container fluid className="px-0">
+                {" "}
+                {/* Sử dụng container-fluid để không có padding */}
+                {/* Phần logo và menu bên trái */}
+                <Navbar.Brand className="ms-0">
+                  <img
+                    src="/images/logo.png"
+                    alt="Logo"
+                    className="navbar-logo"
+                  />
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
-                  <Nav className="me-auto">
+                  <Nav className="me-auto ms-0">
+                    {" "}
+                    {/* Loại bỏ margin trái và phải */}
                     <Nav.Link as={NavLink} to="/home">
-                      <i className="bi bi-house-door me-2"></i>
-                      Trang chủ
+                      <i className="bi bi-house-door me-2"></i>Trang chủ
                     </Nav.Link>
                     <Nav.Link as={NavLink} to="/my-nfts">
-                      <i className="bi bi-bank me-2"></i>
-                      Kho NFT
+                      <i className="bi bi-bank me-2"></i>Kho NFT
+                    </Nav.Link>
+                    <Nav.Link as={NavLink} to="/purchase-history">
+                      <i className="bi bi-bank me-2"></i>Lịch sử mua hàng
                     </Nav.Link>
                   </Nav>
 
-                  <Nav>
+                  {/* Phần tài khoản sát bên phải */}
+                  <Nav className="ms-auto d-flex align-items-center">
+                    {/* Phần kết nối ví sát bên phải */}
+                    <div className="d-flex align-items-center ms-3">
+                      {!walletAddress ? (
+                        <Button
+                          variant="success"
+                          onClick={connectWallet}
+                          disabled={walletLoading}
+                        >
+                          {walletLoading ? (
+                            <Spinner as="span" animation="border" size="sm" />
+                          ) : (
+                            "Kết nối ví"
+                          )}
+                        </Button>
+                      ) : (
+                        <div className="d-flex align-items-center">
+                          <span className="me-3">
+                            SOL: <strong>{walletBalance.toFixed(2)} SOL</strong>
+                          </span>
+                          <span>
+                            USDC:{" "}
+                            <span className="fw-bold text-white ms-1">
+                              {usdcBalance !== null
+                                ? usdcBalance.toFixed(2)
+                                : "Đang tải..."}{" "}
+                              USDC
+                            </span>
+                          </span>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={disconnectWallet}
+                            className="ms-3"
+                          >
+                            Ngắt kết nối
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                     <NavDropdown
                       title={
                         <>
                           <i className="bi bi-person-circle me-2"></i>
-                          {userData?.email}
+                          {userData?.email || "Tài khoản"}
                         </>
                       }
+                      id="user-dropdown"
                     >
-                      <NavDropdown.Item onClick={handleLogout} className="text-danger">
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item
+                        onClick={handleLogout}
+                        className="text-danger text-center"
+                      >
                         <i className="bi bi-box-arrow-right me-2"></i>
                         Đăng xuất
                       </NavDropdown.Item>
@@ -189,79 +270,35 @@ function App() {
                 </Navbar.Collapse>
               </Container>
             </Navbar>
-
-            {/* Wallet Balance Section - Always Visible */}
-            <Container fluid className=" py-2 border-bottom text-white">
-              <Row className="align-items-center">
-                <Col>
-                  {!walletAddress ? (
-                    <Button
-                      variant="success"
-                      onClick={connectWallet}
-                      disabled={walletLoading}
-                    >
-                      {walletLoading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Connecting...
-                        </>
-                      ) : (
-                        'Connect'
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="d-flex align-items-center">
-                      <span className="me-3 text-muted text-white">
-                        SOL:
-                        <span className="fw-bold text-white ms-1">
-                          {walletBalance.toFixed(2)} SOL
-                        </span>
-                      </span>
-                      <span className="me-3 text-muted text-white">
-                        USDC:
-                        <span className="fw-bold text-white ms-1">
-                          {usdcBalance !== null ? usdcBalance.toFixed(2) : 'Đang tải...'} USDC
-                        </span>
-                      </span>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={disconnectWallet}
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  )}
-                </Col>
-              </Row>
-            </Container>
-
             {walletError && (
               <Container fluid>
-                <div className="alert alert-danger mt-2 mb-0 py-1 px-2" role="alert">
-                  {walletError}
-                </div>
+                <div className="alert alert-danger mt-2">{walletError}</div>
               </Container>
             )}
 
-            <Container fluid className="mt-3">
+            <Container className="mt-3">
               <Routes>
                 <Route path="/" element={<Navigate to="/home" replace />} />
-                <Route path="/home" element={<Home referenceId={userData?.referenceId} />} />
-                <Route path="/my-nfts" element={<MyNfts referenceId={userData?.referenceId} />} />
                 <Route
-                  path="/user"
+                  path="/home"
+                  element={<Home referenceId={userData?.referenceId} />}
+                />
+                <Route
+                  path="/my-nfts"
+                  element={<MyNfts referenceId={userData?.referenceId} />}
+                />
+                <Route
+                  path="/purchase-history"
                   element={
-                    <User
-                      referenceId={userData?.referenceId}
-                      email={userData?.email}
-                    />
+                    <PurchaseHistory userReferenceId={userData?.referenceId} />
                   }
                 />
               </Routes>
             </Container>
-          </div>
+          </>
         )}
+        <Footer />{" "}
+        {/* Footer component is placed outside Routes to ensure it is always visible */}
       </div>
     </Router>
   );

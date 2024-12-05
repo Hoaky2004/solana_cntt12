@@ -1,84 +1,178 @@
 /* Bảng màu Web3 Grey Theme */
 :root {
   /* Màu chính */
-  --primary-color: #6B7280;
+  --primary-color: #1c1a24;
   /* Xám trung tính */
-  --secondary-color: #9CA3AF;
+  --secondary-color: #1c1a24;
   /* Xám nhạt */
-  --accent-color: #4B5563;
+  --accent-color: #1c1a24;
   /* Xám đậm */
-  --hover-color: #374151;
+  --hover-color: #0062ff;
   /* Xám tối */
 
   /* Nền */
-  --background-light: #F9FAFB;
+  --background-light: #1c1a24;
   /* Xám trắng rất nhạt */
-  --background-dark: #1F2937;
+  --background-dark: #1c1a24;
   /* Xám đen */
   --background-alt: #111827;
   /* Đen xám */
-  --background-card: #E5E7EB;
+  --background-card: #e5e7eb;
   /* Xám nhạt cho thẻ */
-  --overlay-color: #6D28D9;
+  --overlay-color: #6d28d9;
   /* Tím đậm làm điểm nhấn */
 
   /* Văn bản */
-  --text-light: #F3F4F6;
+  --text-light: #bf00ff;
   /* Xám trắng */
-  --text-dark: #111827;
+  --text-dark: #bf00ff;
   /* Đen xám */
-  --text-muted: #6B7280;
+  --text-muted: #ffffff;
   /* Xám trung tính */
-  --text-link: #4338CA;
+  --text-link: #4338ca;
   /* Xanh indigo */
-  --text-highlight: #D97706;
+  --text-highlight: #d97706;
   /* Cam nổi bật */
 
   /* Trạng thái */
-  --success-color: #10B981;
+  --success-color: #10b981;
   /* Xanh lá mint */
-  --error-color: #EF4444;
+  --error-color: #ef4444;
   /* Đỏ cảnh báo */
-  --warning-color: #F59E0B;
+  --warning-color: #f59e0b;
   /* Vàng cảnh báo */
-  --info-color: #3B82F6;
+  --info-color: #3b82f6;
   /* Xanh dương */
 
   /* Gradient */
-  --gradient-primary: linear-gradient(90deg, #6B7280, #4B5563);
+  --gradient-primary: linear-gradient(90deg, #1c1a24, #1c1a24);
   /* Gradient xám */
-  --gradient-secondary: linear-gradient(90deg, #9CA3AF, #6B7280);
+  --gradient-secondary: linear-gradient(90deg, #9ca3af, #1c1a24);
   /* Gradient xám nhạt */
-  --gradient-accent: linear-gradient(90deg, #374151, #1F2937);
+  --gradient-accent: linear-gradient(90deg, #374151, #1f2937);
   /* Gradient xám đen */
 
   /* Bóng và viền */
-  --card-shadow: rgba(55, 65, 81, 0.1);
+  --card-shadow: rgba(255, 255, 255, 0.1);
   /* Bóng xám nhạt cho thẻ */
   --card-border: rgba(107, 114, 128, 0.2);
   /* Viền xám cho thẻ */
-  --input-border: #D1D5DB;
+  --input-border: #d1d5db;
   /* Viền input */
 }
 
+/* Tổng thể cấu trúc cho body */
+/* Tổng thể cấu trúc cho body */
 body {
-  background: linear-gradient(90deg, var(--background-dark), var(--accent-color));
-  font-family: 'Inter', 'Roboto', sans-serif;
+  background: linear-gradient(
+    90deg,
+    var(--background-dark),
+    var(--accent-color)
+  );
+  font-family: "Inter", "Roboto", sans-serif;
   color: var(--text-dark);
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Đảm bảo chiều cao trang luôn là 100% */
+}
+
+.navbar-logo {
+  height: 60px; /* Đặt chiều cao tùy chỉnh */
+  width: 140px; /* Giữ nguyên tỷ lệ khung hình */
+  margin-left: 20px; /* Khoảng cách giữa logo và các thành phần khác */
+  margin-right: 20px; /* Khoảng cách giữa logo và các thành phần khác */
+}
+
+.header-banner {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.header-image {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Loại bỏ padding mặc định cho container */
+.navbar .container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.navbar-brand,
+.navbar-nav {
+  margin-left: 0; /* Đảm bảo logo và menu không có margin */
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  height: 500px; /* Fixed height for the images */
+  overflow: hidden;
+}
+
+.slider-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out; /* Fade effect duration */
+}
+
+.slider-image.visible {
+  opacity: 1; /* Make the current image visible */
+}
+
+.slider-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.slider-button.prev {
+  left: 10px;
+}
+
+.slider-button.next {
+  right: 10px;
+}
+
+.slider-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .app-container {
   max-width: 100%;
   margin: 0 auto;
-  background: linear-gradient(90deg, var(--background-dark), var(--accent-color));
+  background: linear-gradient(
+    90deg,
+    var(--background-dark),
+    var(--accent-color)
+  );
   box-shadow: 0 4px 6px rgba(55, 65, 81, 0.1);
 }
 
 .navbar {
-  background: linear-gradient(90deg, var(--background-dark), var(--accent-color)) !important;
+  background: linear-gradient(
+    90deg,
+    var(--background-dark),
+    var(--accent-color)
+  ) !important;
   padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(55, 65, 81, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar .navbar-brand {
@@ -87,7 +181,7 @@ body {
 }
 
 .navbar .nav-link {
-  color: rgba(243, 244, 246, 0.8) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   transition: color 0.3s ease;
 }
 
@@ -101,7 +195,11 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--background-dark), var(--accent-color));
+  background: linear-gradient(
+    135deg,
+    var(--background-dark),
+    var(--accent-color)
+  );
 }
 
 .auth-form-wrapper {
@@ -144,13 +242,13 @@ body {
 
 /* Buttons */
 .btn-outline-danger {
-  border-color: #EF4444;
-  color: #EF4444;
+  border-color: #ef4444;
+  color: #ef4444;
   transition: all 0.3s ease;
 }
 
 .btn-outline-danger:hover {
-  background-color: #EF4444;
+  background-color: #ef4444;
   color: white;
 }
 
@@ -170,8 +268,8 @@ body {
 
 /* Alert Styling */
 .alert-danger {
-  background-color: #FEE2E2;
-  color: #7F1D1D;
+  background-color: #000000;
+  color: #7f1d1d;
   border: none;
   border-radius: 8px;
 }
